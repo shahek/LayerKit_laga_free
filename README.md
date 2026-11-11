@@ -14,6 +14,7 @@ Built with React + Vite + Tailwind + [Remotion](https://www.remotion.dev).
 - **Custom font upload** (.ttf .otf .woff .woff2) and **image upload** (photos, logos)
 - Preview backdrops: sample footage, transparent checkerboard, black, white
 - Project auto-saves in the browser
+- **One-click WebM VP9 export with transparency**, downloaded straight to the device
 
 ## Run locally
 
@@ -22,7 +23,11 @@ npm install
 npm run dev          # editor at http://localhost:5173
 ```
 
-## Render transparent video (until Phase 3 adds a button)
+## Export
+
+**WebM VP9 (alpha) — one click:** Export → WebM VP9 → *Render & download*. Renders entirely in the browser (Chrome/Edge desktop) with `@remotion/web-renderer` and saves the `.webm` to your device.
+
+**ProRes 4444 .mov — desktop render:**
 
 1. In the editor click **Export → Copy project JSON**, save it as `project.json` in this folder.
 2. Run:
@@ -59,4 +64,4 @@ src/
 
 ## License note
 
-Remotion is free for individuals and small teams; companies may need a paid license. Check https://www.remotion.dev/license before commercial use.
+Remotion is free for individuals and small teams; companies may need a paid license. Check https://www.remotion.dev/license before commercial use. The browser renderer uses `licenseKey: 'free-license'` in `src/lib/exportWeb.ts` — replace it with your key if you need a company license.
