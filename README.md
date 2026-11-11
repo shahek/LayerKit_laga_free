@@ -6,7 +6,8 @@ Built with React + Vite + Tailwind + [Remotion](https://www.remotion.dev).
 
 ## Features (Phase 1 + 2)
 
-- 3 templates: **Lower Third**, **Name Card**, **Big Title**
+- **53 templates**: Lower Third, Name Card, Big Title + **25 label effect presets** and **25 title effect presets**
+- Effect engine (`src/templates/fx/`): 26 text motions (rise, blur, pop, typewriter, wave, flip, scramble, glitch, bounce, neon, outline-fill…) × 15 label layouts × 10 title layouts
 - Live preview with play/scrub controls
 - One design → **16:9, 9:16, 1:1** (layout adapts automatically)
 - Auto-generated editor form from each template's field list
@@ -38,6 +39,12 @@ npx remotion render src/remotion/index.ts lower-third out/lower-third.mov --prop
 
 Output: ProRes 4444 `.mov` with alpha (defaults in `remotion.config.ts`).
 For WebM with alpha: add `--codec=vp9 --pixel-format=yuva420p`.
+
+## Add a new effect preset
+
+Add one line to `PRESETS` in `src/templates/fx/labels.tsx` or `titles.tsx` — pick a layout and a text effect from `FX` in `textFx.tsx`.
+
+Preview every template as stills: `node scripts/contact-sheet.mjs 80 out/sheet`
 
 ## Add a new template
 

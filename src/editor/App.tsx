@@ -77,7 +77,7 @@ export default function App() {
     <div className="flex h-full flex-col">
       {/* Top bar */}
       <header className="flex h-14 shrink-0 items-center gap-4 border-b border-ink-700 bg-ink-900 px-4">
-        <div className="flex w-[260px] items-center gap-2.5">
+        <div className="flex w-[300px] items-center gap-2.5">
           <div className="relative h-7 w-7">
             <span className="absolute inset-0 translate-x-1 translate-y-1 rounded-md bg-lime" />
             <span className="absolute inset-0 rounded-md border-2 border-ink-100 bg-ink-900" />
@@ -133,7 +133,7 @@ export default function App() {
 
       <div className="flex min-h-0 flex-1">
         {/* Templates */}
-        <aside className="w-[260px] shrink-0 border-r border-ink-700 bg-ink-900">
+        <aside className="w-[300px] shrink-0 border-r border-ink-700 bg-ink-900">
           <TemplateList
             activeId={template.id}
             onSelect={(id) => update({ templateId: id })}

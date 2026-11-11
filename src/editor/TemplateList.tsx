@@ -18,17 +18,34 @@ export const TemplateList = ({
   fonts: CustomFont[];
 }) => {
   const [q, setQ] = useState('');
+  const [cat, setCat] = useState('All');
+  const cats = ['All', ...new Set(TEMPLATES.map((t) => t.category))];
   const groups = useMemo(() => {
-    const list = TEMPLATES.filter((t) => (t.name + t.category + t.description).toLowerCase().includes(q.toLowerCase()));
+    const list = TEMPLATES.filter(
+      (t) => (cat === 'All' || t.category === cat) && (t.name + t.category + t.description).toLowerCase().includes(q.toLowerCase()),
+    );
     const map = new Map<string, typeof list>();
     list.forEach((t) => map.set(t.category, [...(map.get(t.category) ?? []), t]));
     return [...map.entries()];
-  }, [q]);
+  }, [q, cat]);
 
   return (
     <div className="flex h-full flex-col">
       <div className="p-4 pb-3">
-        <input className={inputCls} placeholder="Search templates…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input className={inputCls} placeholder={`Search ${TEMPLATES.length} templates…`} value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="mt-3 flex gap-1.5">
+          {cats.map((c) => (
+            <button
+              type="button"
+              key={c}
+              onClick={() => setCat(c)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition ${cat === c ? 'bg-lime text-ink-950' : 'bg-ink-800 text-ink-300 hover:text-ink-100'}`}
+            >
+              {c}
+              <span className="ml-1 opacity-60">{c === 'All' ? TEMPLATES.length : TEMPLATES.filter((t) => t.category === c).length}</span>
+            </button>
+          ))}
+        </div>
       </div>
       <div className="scroll-thin flex-1 space-y-5 overflow-y-auto px-4 pb-6">
         {groups.map(([cat, items]) => (
@@ -37,7 +54,7 @@ export const TemplateList = ({
               <span>{cat}</span>
               <span>{items.length}</span>
             </div>
-            <div className="space-y-2.5">
+            <div className="grid grid-cols-2 gap-2">
               {items.map((t) => {
                 const v = values[t.id] ?? t.defaults;
                 const dur = durationInFrames(v);
@@ -47,7 +64,8 @@ export const TemplateList = ({
                     type="button"
                     key={t.id}
                     onClick={() => onSelect(t.id)}
-                    className={`group block w-full overflow-hidden rounded-xl border text-left transition ${
+                    title={t.description}
+                    className={`group block w-full overflow-hidden rounded-lg border text-left transition ${
                       active ? 'border-lime/70 bg-ink-800' : 'border-ink-700 bg-ink-900 hover:border-ink-600'
                     }`}
                   >
@@ -63,10 +81,7 @@ export const TemplateList = ({
                         style={{ width: '100%', height: '100%' }}
                       />
                     </div>
-                    <div className="px-3 py-2.5">
-                      <div className="text-sm font-medium">{t.name}</div>
-                      <div className="mt-0.5 line-clamp-2 text-xs leading-snug text-ink-400">{t.description}</div>
-                    </div>
+                    <div className="truncate px-2 py-1.5 text-[11px] font-medium">{t.name}</div>
                   </button>
                 );
               })}
