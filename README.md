@@ -1,5 +1,10 @@
 # Layerkit — Motion Overlay Studio
 
+[![Deploy](https://github.com/shahek/LayerKit_laga_free/actions/workflows/deploy.yml/badge.svg)](https://github.com/shahek/LayerKit_laga_free/actions/workflows/deploy.yml)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/shahek/LayerKit_laga_free)
+
+**Live:** https://shahek.github.io/LayerKit_laga_free/
+
 Edit animated overlays (lower thirds, name cards, titles) in the browser and export them as **transparent video** for CapCut, Premiere, DaVinci Resolve and Final Cut.
 
 Built with React + Vite + Tailwind + [Remotion](https://www.remotion.dev).
@@ -16,6 +21,16 @@ Built with React + Vite + Tailwind + [Remotion](https://www.remotion.dev).
 - Preview backdrops: sample footage, transparent checkerboard, black, white
 - Project auto-saves in the browser
 - **One-click WebM VP9 export with transparency**, downloaded straight to the device
+
+## Go live (GitHub Pages, free)
+
+One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+After that every push to `main` deploys automatically. To deploy by hand: **Actions → Deploy Layerkit to GitHub Pages → Run workflow**.
+
+## Run in the cloud (no install)
+
+Click **Open in GitHub Codespaces** above, then run `npm run dev` in the terminal.
 
 ## Run locally
 

@@ -1,0 +1,7 @@
+{
+  "name": "Layerkit",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "postCreateCommand": "npm ci",
+  "forwardPorts": [5173],
+  "portsAttributes": { "5173": { "label": "Layerkit editor", "onAutoForward": "openBrowser" } }
+}
