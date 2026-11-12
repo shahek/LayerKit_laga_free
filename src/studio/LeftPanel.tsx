@@ -7,9 +7,10 @@ import { OVERLAYS } from './effects';
 import type { MediaItem } from './store';
 import type { Studio } from './types';
 
-type Tab = 'media' | 'text' | 'templates' | 'overlays';
+export type LeftTab = 'media' | 'text' | 'templates' | 'overlays';
+type Tab = LeftTab;
 
-const TEXT_PRESETS = [
+export const TEXT_PRESETS = [
   { name: 'Big title', text: 'Big Title', textSize: 140, textWeight: 900, textBg: null as string | null, textFont: 'heading' as const },
   { name: 'Subtitle', text: 'A short subtitle', textSize: 64, textWeight: 600, textBg: null, textFont: 'body' as const },
   { name: 'Caption box', text: 'Caption on a box', textSize: 56, textWeight: 700, textBg: '#000000', textFont: 'body' as const },
@@ -19,6 +20,8 @@ const TEXT_PRESETS = [
 export type TextPreset = (typeof TEXT_PRESETS)[number];
 
 export const LeftPanel = ({
+  tab,
+  setTab,
   studio,
   media,
   brand,
@@ -30,18 +33,19 @@ export const LeftPanel = ({
   addTemplate,
   toggleOverlay,
 }: {
+  tab: LeftTab;
+  setTab: (t: LeftTab) => void;
   studio: Studio;
   media: MediaItem[];
   brand: Brand;
   fonts: CustomFont[];
-  onUploadMedia: (files: File[]) => void;
+  onUploadMedia: (files: File[]) => unknown;
   addMedia: (m: MediaItem) => void;
   setBackground: (m: MediaItem) => void;
   addText: (p: TextPreset) => void;
   addTemplate: (id: string) => void;
   toggleOverlay: (id: string) => void;
 }) => {
-  const [tab, setTab] = useState<Tab>('templates');
   const [q, setQ] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);

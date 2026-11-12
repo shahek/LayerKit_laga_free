@@ -6,7 +6,7 @@ import type { Brand, CustomFont, FormatId, ImageAsset } from '../lib/types';
 import { FORMATS, FPS, durationInFrames } from '../lib/types';
 import { getTemplate } from '../templates/registry';
 import { ClipInspector, ProjectInspector } from './Inspector';
-import { LeftPanel, type TextPreset } from './LeftPanel';
+import { LeftPanel, TEXT_PRESETS, type LeftTab, type TextPreset } from './LeftPanel';
 import type { MediaItem, useStudio } from './store';
 import { StudioComp, type StudioProps } from './StudioComp';
 import { Timeline, fmtTime } from './Timeline';
@@ -47,7 +47,10 @@ export const StudioView = ({
   backdrop: Backdrop;
 }) => {
   const { studio, commit, updateClip, dragClip, snapshot, undo, redo, media, setMedia } = st;
-  const player = useRef<PlayerRef>(null);
+  const player = useRef<PlayerRef | null>(null);
+  const [playerEl, setPlayerEl] = useState<PlayerRef | null>(null);
+  const [leftTab, setLeftTab] = useState<LeftTab>('templates');
+  const importRef = useRef<HTMLInputElement>(null);
   const [frame, setFrame] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -59,8 +62,10 @@ export const StudioView = ({
 
   // keep our playhead in sync with the player
   useEffect(() => {
-    const p = player.current;
+    const p = playerEl;
     if (!p) return;
+    setFrame(p.getCurrentFrame());
+    setPlaying(p.isPlaying());
     const onFrame = (e: { detail: { frame: number } }) => setFrame(e.detail.frame);
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
@@ -72,13 +77,21 @@ export const StudioView = ({
       p.removeEventListener('play', onPlay);
       p.removeEventListener('pause', onPause);
     };
-  }, [format]);
+  }, [playerEl]);
 
   const seek = useCallback((fr: number) => {
     player.current?.seekTo(fr);
     setFrame(fr);
   }, []);
-  const toggle = () => player.current?.toggle();
+  const toggle = () => {
+    const p = player.current;
+    if (!p) return;
+    if (p.isPlaying()) p.pause();
+    else {
+      if (frame >= studio.duration - 1) p.seekTo(0);
+      p.play();
+    }
+  };
 
   /* ── adding things ── */
   const place = (clip: Clip) => {
@@ -117,6 +130,19 @@ export const StudioView = ({
     setMedia((m) => [...items, ...m]);
     const imgs = files.filter((x) => x.type.startsWith('image/'));
     if (imgs.length) onUploadImages(imgs); // also available in template image pickers
+    return items;
+  };
+
+  const loadDemo = () => {
+    const title = getTemplate('title-blur-reveal');
+    const lower = getTemplate('label-classic-bar');
+    const c1 = baseClip({ kind: 'template', name: title.name, templateId: title.id, values: { ...title.defaults, title: 'Welcome to my channel', subtitle: 'Episode 01' }, start: 0, duration: 120, track: 0 });
+    const c2 = baseClip({ kind: 'template', name: lower.name, templateId: lower.id, values: { ...lower.defaults }, start: 120, duration: 150, track: 0 });
+    const c3 = baseClip({ kind: 'text', name: 'Caption', text: 'Subscribe for more', textSize: 56, textWeight: 700, textBg: '#000000', textFont: 'body', textColor: '#ffffff', start: 150, duration: 120, track: 1, y: -30, effects: ['pulse'], inAnim: 'pop', outAnim: 'fade' });
+    commit((s) => ({ ...s, clips: [c1, c2, c3], duration: Math.max(s.duration, 300), background: { ...s.background, type: 'color', color: '#1d2433' }, overlays: ['vignette'] }));
+    setSelectedId(null);
+    seek(0);
+    setTimeout(() => player.current?.play(), 100);
   };
 
   /* ── clip operations ── */
@@ -207,6 +233,8 @@ export const StudioView = ({
       <div className="flex min-h-0 flex-1">
         <aside className="w-[340px] shrink-0 border-r border-ink-700 bg-ink-900">
           <LeftPanel
+            tab={leftTab}
+            setTab={setLeftTab}
             studio={studio}
             media={media}
             brand={brand}
@@ -227,7 +255,10 @@ export const StudioView = ({
                 <div className={`relative overflow-hidden rounded-lg ring-1 ring-white/5 ${BACKDROP_CLS[backdrop]}`} style={{ width: pw, height: ph }}>
                   <Player
                     key={format}
-                    ref={player}
+                    ref={(r: PlayerRef | null) => {
+                      player.current = r;
+                      setPlayerEl(r);
+                    }}
                     component={StudioComp}
                     inputProps={props}
                     durationInFrames={Math.max(1, studio.duration)}
@@ -250,8 +281,40 @@ export const StudioView = ({
             </div>
             {studio.clips.length === 0 && studio.background.type === 'none' && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div className="rounded-xl bg-ink-900/90 px-5 py-4 text-center text-sm text-ink-300 shadow-xl">
-                  Add a <span className="text-lime">Motion</span> template, text or your own video from the left panel.
+                <div className="pointer-events-auto w-[420px] rounded-2xl border border-ink-700 bg-ink-900/95 p-5 text-center shadow-2xl">
+                  <div className="text-base font-semibold">Start your edit</div>
+                  <p className="mt-1 text-xs text-ink-400">Pick one to begin — everything lands on the timeline below.</p>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => addTemplate('label-classic-bar')} className="rounded-xl border border-ink-700 px-3 py-3 text-left hover:border-lime/60">
+                      <div className="text-sm">◆ Motion template</div>
+                      <div className="text-[11px] text-ink-400">Adds a lower third</div>
+                    </button>
+                    <button type="button" onClick={() => addText(TEXT_PRESETS[0])} className="rounded-xl border border-ink-700 px-3 py-3 text-left hover:border-lime/60">
+                      <div className="text-sm">T Text</div>
+                      <div className="text-[11px] text-ink-400">Adds a big title</div>
+                    </button>
+                    <button type="button" onClick={() => importRef.current?.click()} className="rounded-xl border border-ink-700 px-3 py-3 text-left hover:border-lime/60">
+                      <div className="text-sm">▶ Your video</div>
+                      <div className="text-[11px] text-ink-400">Import & use as background</div>
+                    </button>
+                    <button type="button" onClick={loadDemo} className="rounded-xl bg-lime px-3 py-3 text-left text-ink-950 hover:brightness-110">
+                      <div className="text-sm font-semibold">✦ Try a demo</div>
+                      <div className="text-[11px] opacity-70">Ready-made 10s edit</div>
+                    </button>
+                  </div>
+                  <input
+                    ref={importRef}
+                    type="file"
+                    hidden
+                    accept="video/*,image/*"
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files ?? []);
+                      e.target.value = '';
+                      const items = await onUploadMedia(files);
+                      if (items[0]) setBackground(items[0]);
+                      setLeftTab('media');
+                    }}
+                  />
                 </div>
               </div>
             )}
