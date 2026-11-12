@@ -10,6 +10,9 @@ import { Preview } from './Preview';
 import { TemplateList } from './TemplateList';
 import { isFontFile, isImageFile, readAsDataURL, useProject, type Backdrop } from './store';
 import { Button } from './ui';
+import { StudioView } from '../studio/StudioView';
+import { StudioExport } from '../studio/StudioExport';
+import { useStudio } from '../studio/store';
 
 type Tab = 'content' | 'brand' | 'assets';
 
@@ -23,6 +26,22 @@ const BACKDROPS: { id: Backdrop; label: string; cls: string }[] = [
 export default function App() {
   const { project, update, setValue, setBrand, resetTemplate, setProject } = useProject();
   const [tab, setTab] = useState<Tab>('content');
+  const [mode, setMode] = useState<'templates' | 'studio'>(() => {
+    try {
+      return location.hash === '#studio' ? 'studio' : 'templates';
+    } catch {
+      return 'templates';
+    }
+  });
+  const st = useStudio();
+  const switchMode = (m: 'templates' | 'studio') => {
+    setMode(m);
+    try {
+      history.replaceState(null, '', m === 'studio' ? '#studio' : '#');
+    } catch {
+      /* ignore */
+    }
+  };
   const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -77,13 +96,25 @@ export default function App() {
     <div className="flex h-full flex-col">
       {/* Top bar */}
       <header className="flex h-14 shrink-0 items-center gap-4 border-b border-ink-700 bg-ink-900 px-4">
-        <div className="flex w-[300px] items-center gap-2.5">
+        <div className="flex w-[440px] items-center gap-2.5">
           <div className="relative h-7 w-7">
             <span className="absolute inset-0 translate-x-1 translate-y-1 rounded-md bg-lime" />
             <span className="absolute inset-0 rounded-md border-2 border-ink-100 bg-ink-900" />
           </div>
           <span className="text-[15px] font-bold tracking-tight">Layerkit</span>
           <span className="rounded-full bg-ink-800 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-ink-300">Beta</span>
+          <div className="ml-3 flex rounded-lg bg-ink-950 p-1">
+            {(['templates', 'studio'] as const).map((m) => (
+              <button
+                type="button"
+                key={m}
+                onClick={() => switchMode(m)}
+                className={`rounded-md px-3 py-1 text-xs font-semibold capitalize transition ${mode === m ? 'bg-lime text-ink-950' : 'text-ink-400 hover:text-ink-100'}`}
+              >
+                {m === 'studio' ? '✂ Studio' : 'Templates'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-1 justify-center">
@@ -131,6 +162,9 @@ export default function App() {
         </div>
       </header>
 
+      {mode === 'studio' ? (
+        <StudioView st={st} brand={project.brand} fonts={project.fonts} images={project.images} onUploadImages={handleFiles} format={project.format} backdrop={project.backdrop} />
+      ) : (
       <div className="flex min-h-0 flex-1">
         {/* Templates */}
         <aside className="w-[300px] shrink-0 border-r border-ink-700 bg-ink-900">
@@ -221,6 +255,7 @@ export default function App() {
           </div>
         </aside>
       </div>
+      )}
 
       <input
         ref={fileRef}
@@ -247,7 +282,10 @@ export default function App() {
         }}
       />
 
-      {exporting && <ExportDialog template={template} props={props} format={project.format} onClose={() => setExporting(false)} />}
+      {exporting && mode === 'studio' && (
+        <StudioExport props={{ studio: st.studio, brand: project.brand, fonts: project.fonts }} format={project.format} onClose={() => setExporting(false)} />
+      )}
+      {exporting && mode === 'templates' && <ExportDialog template={template} props={props} format={project.format} onClose={() => setExporting(false)} />}
 
       {toast && (
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink-100 px-4 py-2 text-sm font-medium text-ink-950 shadow-xl">

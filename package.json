@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@remotion/media": "^4.0.542",
     "@remotion/player": "^4.0.542",
     "@remotion/web-renderer": "^4.0.542",
     "react": "^19.3.1",

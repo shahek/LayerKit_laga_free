@@ -31,6 +31,61 @@ export async function checkWebExport(format: FormatId) {
   }
 }
 
+/** Generic in-browser render: any component + props → WebM (VP9, alpha) or MP4 (H.264). */
+export async function renderVideo({
+  id,
+  component,
+  inputProps,
+  width,
+  height,
+  frames,
+  container,
+  muted,
+  onProgress,
+  signal,
+}: {
+  id: string;
+  component: React.ComponentType<Record<string, unknown>>;
+  inputProps: Record<string, unknown>;
+  width: number;
+  height: number;
+  frames: number;
+  container: 'webm' | 'mp4';
+  muted: boolean;
+  onProgress: (p: number) => void;
+  signal: AbortSignal;
+}): Promise<Blob> {
+  const result = await renderMediaOnWeb({
+    composition: { id, component, width, height, fps: FPS, durationInFrames: frames },
+    inputProps,
+    container,
+    videoCodec: container === 'webm' ? 'vp9' : 'h264',
+    transparent: container === 'webm',
+    muted,
+    videoBitrate: 'high',
+    signal,
+    onProgress: (p) => onProgress(p.progress),
+    licenseKey: REMOTION_LICENSE_KEY,
+  });
+  return result.getBlob();
+}
+
+export async function checkContainer(container: 'webm' | 'mp4', width: number, height: number) {
+  try {
+    const r = await canRenderMediaOnWeb({
+      container,
+      videoCodec: container === 'webm' ? 'vp9' : 'h264',
+      width,
+      height,
+      transparent: container === 'webm',
+      muted: true,
+    });
+    return { ok: r.canRender, reason: r.issues.filter((i) => i.severity === 'error').map((i) => i.message).join(' ') };
+  } catch (e) {
+    return { ok: false, reason: (e as Error).message };
+  }
+}
+
 /** Renders the current design to a transparent WebM (VP9) Blob, fully in the browser. */
 export async function renderWebm({
   template,

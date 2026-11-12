@@ -39,6 +39,20 @@ npm install
 npm run dev          # editor at http://localhost:5173
 ```
 
+## Studio (CapCut-style editor)
+
+Switch to **✂ Studio** in the top bar (or open `#studio`).
+
+- **Timeline** with tracks: drag clips to move (snaps to playhead and other clips), drag edges to trim, `S` split, `Ctrl+D` duplicate, `Del` delete, `Ctrl+Z` undo
+- **Media**: import your own video/image → add as a clip or set as background (video sound included)
+- **Text** presets and all **53 motion templates** as clips
+- **Filters**: 15 colour grades (B&W, Noir, Vintage, Teal & Orange, Cyber…) + brightness/contrast/saturation/hue/blur, per clip and for the background
+- **Effects**: 16 per-clip effects (shake, glitch, glow, Ken Burns, rainbow, heartbeat…)
+- **Animate**: 11 in/out animations per clip
+- **Overlays**: vignette, film grain, cinema bars, light leak, scanlines, accent frame
+- Drag on the preview to move the selected clip
+- Export **MP4 (H.264, with sound)** or **transparent WebM**
+
 ## Export
 
 **WebM VP9 (alpha) — one click:** Export → WebM VP9 → *Render & download*. Renders entirely in the browser (Chrome/Edge desktop) with `@remotion/web-renderer` and saves the `.webm` to your device.
